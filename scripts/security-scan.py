@@ -29,10 +29,24 @@ def summarize_trivy(document):
             severity = finding.get('Severity', 'UNKNOWN').upper()
             if severity not in ('UNKNOWN', 'LOW', 'MEDIUM', 'HIGH', 'CRITICAL'):
                 raise ValueError('Invalid severity')
+            cause = finding.get('CauseMetadata') or {}
             # Unknown/unrated findings require critical review; never silently downgrade them.
+            # Location and rule text only: code snippets can contain values and are never copied.
             findings.append({'tool': 'trivy', 'check_id': finding.get('ID', 'unknown'),
-                             'severity': 'CRITICAL' if severity == 'UNKNOWN' else severity})
+                             'severity': 'CRITICAL' if severity == 'UNKNOWN' else severity,
+                             'title': finding.get('Title', ''), 'resolution': finding.get('Resolution', ''),
+                             'file': result.get('Target', ''), 'line': cause.get('StartLine') or '',
+                             'resource': cause.get('Resource', ''), 'url': finding.get('PrimaryURL', '')})
     return findings
+
+def summarize_gitleaks(report):
+    if not isinstance(report, list):
+        raise ValueError('Invalid Gitleaks report')
+    # Secret, Match and Line fields are deliberately not copied.
+    return [{'tool': 'gitleaks', 'check_id': item['RuleID'], 'severity': 'CRITICAL',
+             'title': item.get('Description', 'Possible secret'), 'resolution': 'Revoke and rotate the credential, then remove it from Git history.',
+             'file': item.get('File', ''), 'line': item.get('StartLine') or '',
+             'resource': (item.get('Commit') or '')[:12], 'url': ''} for item in report]
 
 def main():
     parser = argparse.ArgumentParser()
@@ -54,9 +68,7 @@ def main():
                 report = run_json(['gitleaks', mode, '--no-banner', '--redact=100', '--exit-code=10',
                                    '--config', str(ROOT / 'security/gitleaks.toml'), '--report-format=json',
                                    '--report-path', str(path), str(ROOT)], path, (0, 10))
-                if not isinstance(report, list):
-                    raise ValueError('Invalid Gitleaks report')
-                findings.extend({'tool': 'gitleaks', 'check_id': item['RuleID'], 'severity': 'CRITICAL'} for item in report)
+                findings.extend(summarize_gitleaks(report))
         target = ROOT if args.phase == 'source' else ROOT / 'environments/lab/plan.json'
         path = temp / 'trivy.json'
         report = run_json(['trivy', 'config', '--config', str(ROOT / 'security/trivy.yaml'),

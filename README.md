@@ -29,7 +29,7 @@ For the supplied Jenkins installation, access localhost:8080 through SSH forward
 ssh -i /path/to/key.pem -L 8080:127.0.0.1:8080 YOUR_USER@JENKINS_HOST
 ```
 
-Open http://localhost:8080, obtain `sudo cat /var/lib/jenkins/secrets/initialAdminPassword`, install suggested plugins and create the administrator account. Confirm Pipeline, Git, Credentials Binding and Timestamper plugins are installed.
+Open http://localhost:8080, obtain `sudo cat /var/lib/jenkins/secrets/initialAdminPassword`, install suggested plugins and create the administrator account. Confirm Pipeline, Git, Credentials Binding, Timestamper, Pipeline: Input Step and HTML Publisher plugins are installed.
 
 ## 2. Prepare local state storage
 
@@ -162,15 +162,15 @@ Push the modules, Jenkinsfile, scripts, docs and lock files to your Git reposito
 
 New Item -> azure-three-tier-lab -> Pipeline.
 
-- Pipeline script from SCM -> Git.
-- Repository URL and read-only checkout credential.
-- Branch: */main.
-- Script path: Jenkinsfile.
+- Pipeline script from SCM -> Git -> `https://github.com/kantinstephane10/3-Tier-app-DR-active-passive-webapp-azure.git`.
+- Branch: */main. Script path: Jenkinsfile. Do not enable shallow clone.
 - Node label terraform-local must point to the prepared state-owning agent.
+
+The Jenkinsfile's first stage clones the same repository and branch itself (`REPO_URL` / `REPO_BRANCH` at the top of the file), with full history for Gitleaks, so the job also works when the Jenkinsfile is pasted into a plain Pipeline job. For a private repository, add a read-only Git credential and put its ID in `REPO_CREDENTIALS`.
 
 The first run loads the parameters. If Build with Parameters is not visible yet, run Build Now once; defaults are foundation/PLAN.
 
-Pipeline stages: checkout -> local state checks -> Azure login/config -> fmt/init/validate -> plan -> deletion check -> saved-plan apply -> backup reconciliation -> Front Door origin protection -> smoke test -> local state snapshot/temporary-file cleanup.
+Pipeline stages: checkout -> source and secret scans -> local state checks -> Azure login/config -> fmt/init/validate/Python tests -> plan -> deletion check -> plan scan -> critical approval -> saved-plan apply -> backup reconciliation -> Front Door origin protection -> smoke test -> security report, local state snapshot and temporary-file cleanup.
 
 ## 8. Roll out in cumulative stages
 
@@ -287,6 +287,8 @@ When you deliberately finish the lab, use a separate trusted operator cleanup pr
 ## Security and critical-only approval
 
 Install the pinned scanners and configure trusted Jenkins approvers as described in [PIPELINE-SECURITY.md](docs/PIPELINE-SECURITY.md). Gitleaks scans secrets; Trivy scans Terraform source and the saved plan. LOW/MEDIUM/HIGH findings continue automatically. CRITICAL findings require an authorized, recorded risk acceptance before APPLY or BACKUP_RECONCILE. PLAN only reports. Scanner execution errors stop the build.
+
+Every build has a **Security Scan Report** link on its page: counts per severity and a table with one row per finding (severity, phase, tool, check ID linked to its documentation, title, file, line, resource, suggested fix). The same table is printed in Console Output. Code snippets and secret values are never included.
 
 ## Verification status
 
