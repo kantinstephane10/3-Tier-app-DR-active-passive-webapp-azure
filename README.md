@@ -1,5 +1,9 @@
 # Kantin Tongue — Azure Terraform + Jenkins, local state
 
+## Architecture
+
+![Azure 3-tier warm standby DR architecture: East US 2 active, Central US standby, behind Azure Front Door](docs/architecture.gif)
+
 This version uses Azure service principal credentials exposed as Jenkins environment variables. Terraform stores its state on the Jenkins agent's local disk. No Azure state storage account or remote backend is created.
 
 The infrastructure modules and rollout stages remain foundation -> primary -> dr -> edge. `PLAN` generates the plan; `APPLY` applies that build's saved plan. The project has not been deployed to Azure from this workspace. Local formatting, script syntax and state helper checks passed; provider execution here is restricted, so Jenkins must pass provider validation and its Azure-authenticated plan.
