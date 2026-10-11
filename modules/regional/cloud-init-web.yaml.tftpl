@@ -1,0 +1,20 @@
+#cloud-config
+package_update: true
+packages: [nginx]
+write_files:
+  - path: /etc/nginx/sites-available/default
+    content: |
+      server {
+        listen 80 default_server;
+        location = /health { proxy_pass http://${app_ip}:8080/health; }
+        location / { include /etc/nginx/snippets/frontdoor-guard.conf; proxy_pass http://${app_ip}:8080; proxy_set_header Host $host; }
+      }
+  - path: /etc/nginx/snippets/frontdoor-guard.conf
+    content: |
+%{ if front_door_id != "" ~}
+      if ($http_x_azure_fdid != "${front_door_id}") { return 403; }
+%{ endif ~}
+runcmd:
+  - systemctl enable nginx
+  - nginx -t
+  - systemctl restart nginx

@@ -1,0 +1,17 @@
+**/.terraform/*
+**/*.tfstate
+**/*.tfstate.*
+**/*.tfplan
+**/plan.json
+**/terraform.tfvars
+**/config.tfvars
+**/backend.hcl
+*.pem
+*.key
+.venv/
+
+**/terraform.tfstate.d/
+.azure-cli/
+
+reports/
+.security-private-*/

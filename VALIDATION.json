@@ -1,0 +1,31 @@
+{
+  "owner": "Kantin Tongue",
+  "terraform": "1.12.2",
+  "azurerm": "4.62.0",
+  "completed": [
+    "terraform fmt -check",
+    "provider initialization and package verification",
+    "cloud-init rendering using Terraform console and yamldecode",
+    "Python compilation",
+    "shell syntax checks",
+    "deletion checker positive/negative cases",
+    "local backend init/apply with an output-only isolated test (no Azure resources)",
+    "local state backup creation, 20-snapshot retention and file permissions",
+    "updated Jenkins credential bindings and removal of Azure backend/storage configuration",
+    "security policy: six tests for severity routing, aggregation, secret report redaction, invalid output and scanner errors",
+    "Gitleaks 8.30.1 and Trivy 0.75.0 checksum-verified binaries; actual source checkout scans completed",
+    "security installer shell syntax and scanner Python compilation"
+  ],
+  "not_completed": [
+    "provider schema validation (workspace prohibits Unix sockets)",
+    "Jenkins runtime execution",
+    "Azure plan or apply",
+    "SQL query test",
+    "regional failover and restore",
+    "Jenkins restricted approval/timeout/rejection runtime",
+    "Trivy resolved Azure plan scan (requires Azure plan)"
+  ],
+  "azure_resources_created": false,
+  "authentication": "Jenkins-bound ARM_* service principal environment variables",
+  "terraform_state": "Persistent local filesystem, outside Jenkins workspace"
+}

@@ -1,0 +1,3 @@
+subscription_id = "YOUR-SUBSCRIPTION-ID"
+prefix = "kt-lab"
+service_principal_object_id = "ENTERPRISE-APPLICATION-SERVICE-PRINCIPAL-OBJECT-ID"

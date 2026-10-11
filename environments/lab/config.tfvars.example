@@ -1,0 +1,10 @@
+prefix = "kt-lab"
+unique_suffix = "REPLACE-WITH-LOWERCASE-UNIQUE-SUFFIX"
+ssh_public_key = "ssh-ed25519 REPLACE-PUBLIC-KEY kantin"
+sql_admin_login = "YOUR-ENTRA-ADMIN-GROUP-NAME"
+sql_admin_object_id = "YOUR-ENTRA-ADMIN-GROUP-OBJECT-ID"
+vm_size = "Standard_D2s_v5"
+sql_sku = "BC_Gen5_2"
+sql_zone_redundant = true
+enable_bastion = true
+enable_nat = true
